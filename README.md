@@ -20,23 +20,30 @@ bindings.
 
 See `perf/zlib-bench.jl`
 
-*Writing*
+**Writing**
 
-| Zlib.jl | 50.14 seconds |
-| GZip.jl | 13.29 seconds |
-| Libz.jl | 13.23 seconds |
+ |         | seconds |
+ | ------- | ------- |
+ | Zlib.jl |   50.14 |
+ | GZip.jl |   13.29 |
+ | Libz.jl |   13.23 |
 
-*Reading Lines*
+**Reading Lines**
 
-| Zlib.jl          | 3.64 seconds |
-| GZip.jl          | 1.34 seconds |
-| GZBufferedStream | 2.44 seconds |
-| Libz.jl          | 2.38 seconds |
+ |                  | seconds |
+ | ---------------- | ------- |
+ | Zlib.jl          |    3.64 |
+ | GZip.jl          |    1.34 |
+ | GZBufferedStream |    2.44 |
+ | Libz.jl          |    2.38 |
 
-*Reading Bytes*
+**Reading Bytes**
 
-| Zlib.jl          | 15.66 seconds |
-| GZip.jl          |  5.10 seconds |
-| GZBufferedStream |  0.45 seconds |
-| Libz.jl          |  0.51 seconds |
+ |                  | seconds |
+ | ---------------- | ------- |
+ | Zlib.jl          |   15.66 |
+ | GZip.jl          |    5.10 |
+ | GZBufferedStream |    0.45 |
+ | Libz.jl          |    0.51 |
+
 
