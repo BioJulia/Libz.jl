@@ -22,28 +22,34 @@ See `perf/zlib-bench.jl`
 
 **Writing**
 
+```
  |         | seconds |
  | ------- | ------- |
  | Zlib.jl |   50.14 |
  | GZip.jl |   13.29 |
  | Libz.jl |   13.23 |
+```
 
 **Reading Lines**
 
+```
  |                  | seconds |
  | ---------------- | ------- |
  | Zlib.jl          |    3.64 |
  | GZip.jl          |    1.34 |
  | GZBufferedStream |    2.44 |
  | Libz.jl          |    2.38 |
+```
 
 **Reading Bytes**
 
+```
  |                  | seconds |
  | ---------------- | ------- |
  | Zlib.jl          |   15.66 |
  | GZip.jl          |    5.10 |
  | GZBufferedStream |    0.45 |
  | Libz.jl          |    0.51 |
+```
 
 
