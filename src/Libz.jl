@@ -11,7 +11,7 @@ module Libz
 
 using Compat
 
-export ZlibInputStream
+export ZlibInputStream, ZlibOutputStream
 
 include("zlib_h.jl")
 
@@ -291,7 +291,6 @@ end
 
 function Base.flush(zstream::ZlibOutputStream)
     if !zstream.finished
-        @show zstream.input_pos
         flushbuffer!(zstream, Z_FINISH)
     end
 end
