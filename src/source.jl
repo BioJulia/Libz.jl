@@ -84,8 +84,19 @@ function DeflateSource(input::Vector{UInt8}, bufsize::Int, gzip::Bool,
 end
 
 
-# TODO: docs
 """
+Construct a zlib deflate input stream to compress gzip/zlib data.
+
+# Args
+  * `input`: A byte vector, IO object, or BufferedInputStream containing
+            data to compress.
+
+# Named Args
+  * `bufsize`: Input and output buffer size.
+  * `gzip`: If true, write gzip header and trailer.
+  * `level`: Compression level in 1-9
+  * `mem_level`: Memory to use for compression in 1-9
+  * `strategy`: Compression strategy. See zlib documentation.
 """
 function ZlibDeflateInputStream(input; bufsize::Int=8192, gzip::Bool=true,
                                 level=6, mem_level=8, strategy=Z_DEFAULT_STRATEGY)
