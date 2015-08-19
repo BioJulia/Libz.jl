@@ -15,41 +15,48 @@ Both have shortcomings that this package aims to address, specifically:
 The goal of this package is to replace both of these as the one true Julia zlib
 bindings.
 
+# API
 
-# Preliminary benchmarks
+This library exports four stream types:
 
-See `perf/zlib-bench.jl`
+ Type | Description
+------| ---------------
+ `ZlibInflateOutputStream` | read and decompresse data
+ `ZlibDeflateOutputStream` | read and compressed data
+ `ZlibInflateInputStream`  | write and decompress data
+ `ZlibDeflateInputStream`  | write and compress data
 
-**Writing**
+These work like regular `IO` objects. Each takes as a parameter either in input
+or output source.
 
-```
- |         | seconds |
- | ------- | ------- |
- | Zlib.jl |   50.14 |
- | GZip.jl |   13.29 |
- | Libz.jl |   13.23 |
-```
 
-**Reading Lines**
+## Examples
 
-```
- |                  | seconds |
- | ---------------- | ------- |
- | Zlib.jl          |    3.64 |
- | GZip.jl          |    1.34 |
- | GZBufferedStream |    2.44 |
- | Libz.jl          |    2.38 |
-```
+```julia
+# read lines from a compressed file
+for line in eachline(open("data.txt.gz") |> ZlibInflateInputStream)
+end
 
-**Reading Bytes**
+# write compressed data to a file
+stream = open("data.txt.gz", "w") |> ZlibDeflateOutputStream()
+for c in rand(UInt8, 10000)
+    write(stream, c)
+end
+close(stream)
 
-```
- |                  | seconds |
- | ---------------- | ------- |
- | Zlib.jl          |   15.66 |
- | GZip.jl          |    5.10 |
- | GZBufferedStream |    0.45 |
- | Libz.jl          |    0.51 |
+# pointlessly compress and decompress some data
+readbytes(rand(UInt8, 10000) |> ZlibDeflateInputStream |> ZlibInflateInputStream)
 ```
 
+## Other functions
+
+There are convenience `Libz.inflate(::Vector{UInt8})` and `Libz.deflate(::Vector{UInt8})`
+functions that take a byte array and return another compressed or decompressed
+byte array.
+
+Checksum functions are exposed as `Libz.crc32(::Vector{UIint8})` and
+`Libz.adler32(::Vector{UIint8})`.
+
+See [BufferedStreams.jl](https://github.com/dcjones/BufferedStreams.jl) for
+benchmarks of this library.
 
