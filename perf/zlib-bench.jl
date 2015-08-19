@@ -1,5 +1,5 @@
 
-import Zlib, GZip, Libz
+import Zlib, GZip, Libz, BufferedStreams
 include("gzbufferedstream.jl")
 
 # Source:
@@ -76,20 +76,43 @@ function libz_readline()
     end
 end
 
+function iostream_readline()
+    reader = open(filename)
+    for line in eachline(reader)
+    end
+end
+
+function bufferediostream_readline()
+    reader = BufferedStreams.BufferedInputStream(open(filename))
+    #reader = BufferedStreams.BufferedInputStream(
+        #Base.FS.open(filename, Base.FS.JL_O_RDONLY))
+    #reader = BufferedStreams.BufferedInputStream(
+        #BufferedStreams.RawFileSource(filename))
+    for line in eachline(reader)
+    end
+end
+
+
 #zlib_readline()
 #gzip_readline()
-gzbufferedstream_readline()
-libz_readline()
+#gzbufferedstream_readline()
+#libz_readline()
+#iostream_readline()
+#bufferediostream_readline()
 
-println("READ LINE:")
+#println("READ LINE:")
 #println("zlib")
 #@time zlib_readline()
 #println("gzip")
 #@time gzip_readline()
-println("gzbufferedstream")
-@time gzbufferedstream_readline()
-println("libz")
-@time libz_readline()
+#println("gzbufferedstream")
+#@time gzbufferedstream_readline()
+#println("libz")
+#@time libz_readline()
+#println("iostream")
+#@time iostream_readline()
+#println("bufferedinputstream{iostream}")
+#@time bufferediostream_readline()
 
 
 # Test reading gzip data byte by byte
@@ -117,16 +140,42 @@ end
 
 function libz_readbyte()
     reader = Libz.ZlibInputStream(open(gzfilename))
+
+    #data = Mmap.mmap(open(gzfilename), Vector{Uint8}, (filesize(gzfilename),))
+    #reader = Libz.ZlibInputStream(data)
+
     while !eof(reader)
         read(reader, UInt8)
     end
 end
 
 
+function iostream_readbyte()
+    reader = open(filename)
+    while !eof(reader)
+        read(reader, UInt8)
+    end
+end
+
+
+function bufferediostream_readbyte()
+    reader = BufferedStreams.BufferedInputStream(open(filename))
+    #reader = BufferedStreams.BufferedInputStream(
+        #Base.FS.open(filename, Base.FS.JL_O_RDONLY))
+    #reader = BufferedStreams.BufferedInputStream(
+        #BufferedStreams.RawFileSource(filename))
+    
+    while !eof(reader)
+        read(reader, UInt8)
+    end
+end
+
 #zlib_readbyte()
 #gzip_readbyte()
 gzbufferedstream_readbyte()
 libz_readbyte()
+#iostream_readbyte()
+#bufferediostream_readbyte()
 
 println("READ BYTE:")
 #println("zlib")
@@ -137,4 +186,12 @@ println("gzbufferedstream")
 @time gzbufferedstream_readbyte()
 println("libz")
 @time libz_readbyte()
+
+#@profile libz_readbyte()
+#Profile.print()
+
+#println("iostream")
+#@time iostream_readbyte()
+#println("buffered iostream")
+#@time bufferediostream_readbyte()
 

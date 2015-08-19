@@ -30,7 +30,7 @@ Base.close(io::GZBufferedStream) = close(io.io)
     c
 end
 
-Base.eof(io::GZBufferedStream) = io.len == 0
+@inline Base.eof(io::GZBufferedStream) = io.len == 0
 
 #function bench()
     #io = GZBufferedStream(GZip.open("random.gz", "rb"))
