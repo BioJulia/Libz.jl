@@ -131,8 +131,76 @@ type ZStream
         strm.data_type = 0
         strm.adler     = 0
         strm.reserved  = 0
-        strm
+        return strm
     end
+end
+
+
+"""
+Initialize a ZStream for inflation.
+"""
+function init_inflate_zstream(gzip::Bool)
+    zstream = Ref(ZStream())
+    ret = ccall((:inflateInit2_, _zlib),
+                Cint, (Ptr{ZStream}, Cint, Ptr{Cchar}, Cint),
+                zstream, gzip ? 32 + 15 : -15, zlib_version, sizeof(ZStream))
+    if ret != Z_OK
+        if ret == Z_MEM_ERROR
+            error("Insufficient memory to allocate zlib stream.")
+        elseif ret == Z_VERSION_ERROR
+            error("Mismatching versions of zlib.")
+        elseif ret == Z_STREAM_ERROR
+            error("Invalid parameters for zlib stream initialiation.")
+        end
+        error("Error initializing zlib stream.")
+    end
+
+    return zstream
+end
+
+
+"""
+Initialize a ZStream for deflation.
+"""
+function init_deflate_stream(gzip::Bool, level::Int, mem_level::Int,
+                             strategy::Int)
+    if !(1 <= level <= 9)
+        error("Invalid zlib compression level.")
+    end
+
+    if !(1 <= mem_level <= 9)
+        error("Invalid zlib memory level.")
+    end
+
+    if strategy != Z_DEFAULT_STRATEGY &&
+        strategy != Z_FILTERED &&
+        strategy != Z_HUFFMAN_ONLY &&
+        strategy != Z_RLE &&
+        strategy != Z_FIXED
+        error("Invalid zlib strategy.")
+    end
+
+   zstream = Ref(ZStream())
+   window_bits = gzip ? 16 + 15 : 15
+   # TODO: when gzip is true, it will write a "simple" gzip header/trailer that
+   # doesn't include a filename, modification time, etc. We may want to support
+   # that.
+   ret = ccall((:deflateInit2_, _zlib),
+               Cint, (Ptr{ZStream}, Cint, Cint, Cint, Cint, Cint, Ptr{Cchar}, Cint),
+               zstream, level, Z_DEFLATED, window_bits, mem_level, strategy,
+               zlib_version, sizeof(ZStream))
+   if ret != Z_OK
+       if ret == Z_MEM_ERROR
+           error("Insufficient memory to allocate zlib stream.")
+       elseif ret == Z_VERSION_ERROR
+           error("Mismatching versions of zlib.")
+       elseif ret == Z_STREAM_ERROR
+           error("Invalid parameters for zlib stream initialiation.")
+       end
+       error("Error initializing zlib stream.")
+   end
+
+   return zstream
 end
 
 

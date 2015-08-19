@@ -8,9 +8,12 @@ module Libz
 
 using BufferedStreams, Compat
 
-export ZlibInputStream, ZlibOutputStream, adler32, crc32
+export ZlibInflateInputStream, ZlibDeflateInputStream,
+       ZlibInputStream, ZlibOutputStream, adler32, crc32
 
 include("zlib_h.jl")
+include("source.jl")
+#include("sink.jl")
 include("checksums.jl")
 
 
@@ -196,6 +199,22 @@ function ZlibOutputStreamSink(output::Vector{UInt8}, bufsize::Int, gzip::Bool,
     return ZlibOutputStreamSink{BufferedOutputStream{EmptyStreamSink}}(
                 BufferedOutputStream(output), gzip, level, mem_level, strategy)
 end
+
+
+# TODO: If I wanted this to work as a Source also, I would have to implement
+# a similar function but readbytes. I think we really do need to write
+# a ZlibCompressionSink and ZlibCompressionSource
+# then
+# ZlibDecompressionSink, ZlibDecompressionSource
+#
+# Hopefull we can find ways to share code.
+
+
+function BufferedStreams.readbytes(sink::ZlibOutputStreamSink,
+                                   buffer::Vector{UInt8}, n::Int, to::Int)
+    # next_out will be set to 
+end
+
 
 
 function BufferedStreams.writebytes(sink::ZlibOutputStreamSink,
