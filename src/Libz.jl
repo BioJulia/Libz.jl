@@ -2,16 +2,16 @@
 # TODO:
 #   * seekable ZlibInputStream
 #   * compress/decompress functions
-#   * adler32, crc32
 #   * tests
 
 module Libz
 
 using BufferedStreams, Compat
 
-export ZlibInputStream, ZlibOutputStream
+export ZlibInputStream, ZlibOutputStream, adler32, crc32
 
 include("zlib_h.jl")
+include("checksums.jl")
 
 
 type ZlibInputStreamSource{T <: BufferedInputStream}
@@ -259,5 +259,8 @@ function ZlibOutputStream(input; bufsize::Int=10000, gzip::Bool=true,
         ZlibOutputStreamSink(input, Int(bufsize), gzip, Int(level),
                              Int(mem_level), Int(strategy)), bufsize)
 end
+
+
+end # module Libz
 
 
