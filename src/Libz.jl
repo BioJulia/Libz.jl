@@ -204,7 +204,8 @@ function BufferedStreams.writebytes(sink::ZlibOutputStreamSink,
 
     zstream.next_in = pointer(buffer)
     zstream.avail_in = n
-    zstream.next_out = pointer(sink.output.buffer)
+    zstream.next_out = pointer(sink.output.buffer, sink.output.position)
+    zstream.avail_out = length(sink.output.buffer) - sink.output.position + 1
     flushmode = eof ? Z_FINISH : Z_NO_FLUSH
 
     while zstream.avail_in > 0 || eof
@@ -214,10 +215,10 @@ function BufferedStreams.writebytes(sink::ZlibOutputStreamSink,
 
         if ret == Z_BUF_ERROR
             if zstream.avail_out == 0
-                sink.output.position = length(sink.output.buffer)
+                sink.output.position = length(sink.output.buffer) + 1
                 flush(sink.output)
-                zstream.next_out = pointer(sink.output.buffer)
-                zstream.avail_out = length(sink.output.buffer)
+                zstream.next_out = pointer(sink.output.buffer, sink.output.position)
+                zstream.avail_out = length(sink.output.buffer) - sink.output.position + 1
             else
                 error("Buffer error during zlib compression.")
             end
@@ -236,6 +237,7 @@ function BufferedStreams.writebytes(sink::ZlibOutputStreamSink,
         end
     end
 
+    sink.output.position = length(sink.output.buffer) - zstream.avail_out + 1
     nb = n - zstream.avail_in
     return nb
 end
