@@ -2,7 +2,7 @@
 
 module Libz
 
-using BufferedStreams, Compat
+using BufferedStreams
 
 export ZlibInflateInputStream, ZlibDeflateInputStream,
        ZlibInflateOutputStream, ZlibDeflateOutputStream,
