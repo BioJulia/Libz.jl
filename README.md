@@ -1,6 +1,9 @@
 
-This is yet another zlib interface for Julia. There are two existing, and more
-mature packages:
+[![Build Status](https://travis-ci.org/BioJulia/Libz.jl.svg?branch=master)](https://travis-ci.org/BioJulia/Libz.jl)
+[![codecov.io](http://codecov.io/github/BioJulia/Libz.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/Libz.jl?branch=master)
+
+This is yet another zlib interface for Julia. It's intended to replace the two
+prior zlib packages.
 
   * [GZip.jl](https://github.com/JuliaLang/GZip.jl)
   * [Zlib.jl](https://github.com/dcjones/Zlib.jl)
@@ -11,9 +14,6 @@ Both have shortcomings that this package aims to address, specifically:
   * GZip.jl is not as slow as Zlib.jl, but still slower than it could to be.
   * GZip.jl only supports file I/O.
   * GZip.jl doesn't support reading/writing plain zlib data.
-
-The goal of this package is to replace both of these as the one true Julia zlib
-bindings.
 
 # API
 
