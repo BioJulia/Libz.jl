@@ -7,6 +7,7 @@ The `M` type parameter should be either :inflate or :deflate
 type Source{M, T <: BufferedInputStream}
     input::T
     zstream::Base.RefValue{ZStream}
+    reset_on_end::Bool
     zstream_end::Bool
 end
 
@@ -14,26 +15,29 @@ end
 # inflate source constructors
 # ---------------------------
 
-function InflateSource{T <: BufferedInputStream}(input::T, gzip::Bool)
-    source = Source{:inflate, T}(input, init_inflate_zstream(gzip), false)
+function InflateSource{T <: BufferedInputStream}(input::T, gzip::Bool,
+                                                 reset_on_end::Bool)
+    source = Source{:inflate, T}(input, init_inflate_zstream(gzip), reset_on_end, false)
     finalizer(source, close)
     return source
 end
 
 
-function InflateSource(input::BufferedInputStream, bufsize::Int, gzip::Bool)
-    return InflateSource(input, gzip)
+function InflateSource(input::BufferedInputStream, bufsize::Int, gzip::Bool,
+                       reset_on_end::Bool)
+    return InflateSource(input, gzip, reset_on_end)
 end
 
 
-function InflateSource(input::IO, bufsize::Int, gzip::Bool)
+function InflateSource(input::IO, bufsize::Int, gzip::Bool, reset_on_end::Bool)
     input_stream = BufferedInputStream(input, bufsize)
-    return InflateSource(input_stream, gzip)
+    return InflateSource(input_stream, gzip, reset_on_end)
 end
 
 
-function InflateSource(input::Vector{UInt8}, bufsize::Int, gzip::Bool)
-    return InflateSource(BufferedInputStream(input), gzip)
+function InflateSource(input::Vector{UInt8}, bufsize::Int, gzip::Bool,
+                       reset_on_end::Bool)
+    return InflateSource(BufferedInputStream(input), gzip, reset_on_end)
 end
 
 
@@ -47,10 +51,12 @@ Open a zlib inflate input stream.
 # Named Args
   * `bufsize`: size of buffer in bytes
   * `gzip`: if true, data is gzip compressed, if false plain zlib compression
+  * `reset_on_end`: On stream end, try to find the start of another stream.
 
 """
-function ZlibInflateInputStream(input; bufsize::Int=8192, gzip::Bool=true)
-    return BufferedInputStream(InflateSource(input, bufsize, gzip), bufsize)
+function ZlibInflateInputStream(input; bufsize::Int=8192, gzip::Bool=true,
+                                reset_on_end::Bool=false)
+    return BufferedInputStream(InflateSource(input, bufsize, gzip, reset_on_end), bufsize)
 end
 
 
@@ -59,7 +65,8 @@ end
 
 function DeflateSource{T <: BufferedInputStream}(
                     input::T, gzip::Bool, level::Int, mem_level::Int, strategy::Int)
-    source = Source{:deflate, T}(input, init_deflate_stream(gzip, level, mem_level, strategy), false)
+    source = Source{:deflate, T}(input, init_deflate_stream(gzip, level, mem_level, strategy),
+                                 false, false)
     finalizer(source, close)
     return source
 end
@@ -120,12 +127,20 @@ function Base.readbytes!{M}(source::Source{M}, buffer::Vector{UInt8},
     zstream.avail_out = to - from + 1
     flushmode = Z_NO_FLUSH
 
+    ret = Z_OK
     while zstream.avail_out > 0
         if zstream.avail_in == 0
             if input.position > input.available
                 nb = fillbuffer!(input)
                 if nb == 0
                     flushmode = Z_FINISH
+
+                    # we already saw a stream end, we don't need to call inflate
+                    # again
+                    if M == :inflate && ret == Z_STREAM_END
+                        close(source)
+                        break
+                    end
                 end
             end
 
@@ -143,8 +158,15 @@ function Base.readbytes!{M}(source::Source{M}, buffer::Vector{UInt8},
         if ret == Z_FINISH
             break
         elseif ret == Z_STREAM_END
-            close(source)
-            break
+            if source.reset_on_end
+                if reset!(source) != Z_OK
+                    close(source)
+                    break
+                end
+            else
+                close(source)
+                break
+            end
         elseif ret != Z_OK
             if ret == Z_DATA_ERROR
                 error("Input is not zlib compressed data.")
@@ -176,6 +198,16 @@ function Base.close(source::Source{:deflate})
         source.zstream_end = true
         ccall((:deflateEnd, _zlib), Cint, (Ptr{ZStream},), source.zstream)
     end
+end
+
+
+function reset!(source::Source{:inflate})
+    return ccall((:inflateReset, _zlib), Cint, (Ptr{ZStream},), source.zstream)
+end
+
+
+function reset!(source::Source{:deflate})
+    return ccall((:deflateReset, _zlib), Cint, (Ptr{ZStream},), source.zstream)
 end
 
 
