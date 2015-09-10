@@ -38,7 +38,7 @@ for line in eachline(open("data.txt.gz") |> ZlibInflateInputStream)
 end
 
 # write compressed data to a file
-stream = open("data.txt.gz", "w") |> ZlibDeflateOutputStream()
+stream = open("data.txt.gz", "w") |> ZlibDeflateOutputStream
 for c in rand(UInt8, 10000)
     write(stream, c)
 end
