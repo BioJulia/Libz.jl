@@ -1,5 +1,5 @@
 
-function _crc32(crc::Uint, data::Ptr{UInt8}, n::Int)
+function _crc32(crc::UInt, data::Ptr{UInt8}, n::Int)
     return ccall((:crc32, _zlib), Culong, (Culong, Ptr{Cchar}, Cuint), crc, data, n)
 end
 
@@ -32,7 +32,7 @@ function crc32(data::Vector{UInt8})
 end
 
 
-function _adler32(adler::Uint, data::Ptr{UInt8}, n::Int)
+function _adler32(adler::UInt, data::Ptr{UInt8}, n::Int)
     return ccall((:adler32, _zlib), Culong, (Culong, Ptr{Cchar}, Cuint), adler, data, n)
 end
 

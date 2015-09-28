@@ -33,7 +33,7 @@ const Z_VERSION_ERROR  = Int32(-6)
 zerror(e::Integer) = bytestring(ccall((:zError, _zlib), Ptr{UInt8}, (Int32,), e))
 type ZError <: Exception
     err::Int32
-    err_str::String
+    err_str::AbstractString
 
     ZError(e::Integer) = (e == Z_ERRNO ? new(e, strerror()) : new(e, zerror(e)))
 end
@@ -96,15 +96,15 @@ end
 
 # The zlib z_stream structure.
 type ZStream
-    next_in::Ptr{Uint8}
+    next_in::Ptr{UInt8}
     avail_in::Cuint
     total_in::Culong
 
-    next_out::Ptr{Uint8}
+    next_out::Ptr{UInt8}
     avail_out::Cuint
     total_out::Culong
 
-    msg::Ptr{Uint8}
+    msg::Ptr{UInt8}
     state::Ptr{Void}
 
     zalloc::Ptr{Void}
