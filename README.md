@@ -21,8 +21,8 @@ This library exports four stream types:
 
  Type | Description
 ------| ---------------
- `ZlibInflateOutputStream` | read and decompresse data
- `ZlibDeflateOutputStream` | read and compressed data
+ `ZlibInflateOutputStream` | read and decompress data
+ `ZlibDeflateOutputStream` | read and compress data
  `ZlibInflateInputStream`  | write and decompress data
  `ZlibDeflateInputStream`  | write and compress data
 
