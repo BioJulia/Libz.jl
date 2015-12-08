@@ -1,5 +1,6 @@
 
 [![Build Status](https://travis-ci.org/BioJulia/Libz.jl.svg?branch=master)](https://travis-ci.org/BioJulia/Libz.jl)
+[![Build status](https://ci.appveyor.com/api/projects/status/g3qixt97g6uua5d6?svg=true)](https://ci.appveyor.com/project/Ward9250/libz-jl)
 [![codecov.io](http://codecov.io/github/BioJulia/Libz.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/Libz.jl?branch=master)
 
 This is yet another zlib interface for Julia. It's intended to replace the two
