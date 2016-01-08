@@ -44,9 +44,9 @@ function gzopen(f::Function, filename::AbstractString)
     open(io->f(ZlibInflateInputStream(io)), filename)
 end
 
-gzwrite(filename::AbstractString, data) = gzopen(io->write(io, data), filename, "w")
-gzreadall(filename::AbstractString) = gzopen(readall, filename)
-gzreadbytes(filename::AbstractString) = gzopen(readbytes, filename)
+writegz(filename::AbstractString, data) = gzopen(io->write(io, data), filename, "w")
+readgz(filename::AbstractString) = gzopen(readbytes, filename)
+readgzstring(filename::AbstractString) = gzopen(readall, filename)
 
 end # module Libz
 
