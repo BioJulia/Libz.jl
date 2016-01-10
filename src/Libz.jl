@@ -6,7 +6,7 @@ using BufferedStreams
 
 export ZlibInflateInputStream, ZlibDeflateInputStream,
        ZlibInflateOutputStream, ZlibDeflateOutputStream,
-       gzopen, gzwrite, gzreadbytes, gzreadall,
+       gzopen, writegz, readgz, readgzstring,
        adler32, crc32
 
 
