@@ -43,3 +43,13 @@ facts("Checksums") do
     @fact adler32(BufferedInputStream(IOBuffer(data), 1024)) --> a32
 end
 
+
+facts("Files") do
+
+    testgz = joinpath(Pkg.dir("Libz"), "test/test.gz")
+    @fact crc32(readgz(testgz)) --> 0x2b082899
+
+    f = tempname() * ".gz"
+    writegz(f, "Hello World!")
+    @fact readgzstring(f) --> "Hello World!"
+end
