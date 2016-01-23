@@ -29,6 +29,13 @@ facts("Sink") do
 end
 
 
+facts("Inflate/Deflate") do
+    data = rand(UInt8, 100000)
+    @fact Libz.inflate(Libz.deflate(data)) --> data
+end
+
+
+
 facts("Checksums") do
     # checking correctness isn't our job, just make sure they're usable
     data = rand(UInt8, 100000)

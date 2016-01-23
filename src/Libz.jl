@@ -17,14 +17,14 @@ include("checksums.jl")
 
 
 function deflate(data::Vector{UInt8})
-    return readbytes(ZlibDeflateOutputStream(data))
+    return readbytes(ZlibDeflateInputStream(data))
 end
 
 const compress = deflate
 
 
 function inflate(data::Vector{UInt8})
-    return readbytes(ZlibInflateOutputStream(data))
+    return readbytes(ZlibInflateInputStream(data))
 end
 
 const decompress = inflate
