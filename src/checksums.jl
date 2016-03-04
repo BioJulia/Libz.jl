@@ -1,11 +1,10 @@
-
-function _crc32(crc::UInt, data::Ptr{UInt8}, n::Int)
-    return ccall((:crc32, _zlib), Culong, (Culong, Ptr{Cchar}, Cuint), crc, data, n)
+function _crc32(crc::UInt32, data::Ptr{UInt8}, n::Int)
+    return ccall((:crc32, _zlib), Culong, (Culong, Ptr{Cchar}, Cuint), crc, data, n) % UInt32
 end
 
 
 function _crc32()
-    return ccall((:crc32, _zlib), Culong, (Culong, Ptr{Void}, Cuint), 0, C_NULL, 0)
+    return ccall((:crc32, _zlib), Culong, (Culong, Ptr{Void}, Cuint), 0, C_NULL, 0) % UInt32
 end
 
 
@@ -20,7 +19,7 @@ function crc32(stream::BufferedInputStream)
         stream.available = 0
         BufferedStreams.fillbuffer!(stream)
     end
-    return UInt32(crc)
+    return crc::UInt32
 end
 
 
@@ -28,17 +27,17 @@ end
 Compute the CRC-32 checksum over a byte array.
 """
 function crc32(data::Vector{UInt8})
-    return UInt32(_crc32(_crc32(), pointer(data), length(data)))
+    return _crc32(_crc32(), pointer(data), length(data))::UInt32
 end
 
 
-function _adler32(adler::UInt, data::Ptr{UInt8}, n::Int)
-    return ccall((:adler32, _zlib), Culong, (Culong, Ptr{Cchar}, Cuint), adler, data, n)
+function _adler32(adler::UInt32, data::Ptr{UInt8}, n::Int)
+    return ccall((:adler32, _zlib), Culong, (Culong, Ptr{Cchar}, Cuint), adler, data, n) % UInt32
 end
 
 
 function _adler32()
-    return ccall((:adler32, _zlib), Culong, (Culong, Ptr{Void}, Cuint), 0, C_NULL, 0)
+    return ccall((:adler32, _zlib), Culong, (Culong, Ptr{Void}, Cuint), 0, C_NULL, 0) % UInt32
 end
 
 
@@ -53,7 +52,7 @@ function adler32(stream::BufferedInputStream)
         stream.available = 0
         BufferedStreams.fillbuffer!(stream)
     end
-    return UInt32(adler)
+    return adler::UInt32
 end
 
 
@@ -61,7 +60,7 @@ end
 Compute the Adler-32 checksum over a byte array.
 """
 function adler32(data::Vector{UInt8})
-    return UInt32(_adler32(_adler32(), pointer(data), length(data)))
+    return _adler32(_adler32(), pointer(data), length(data))::UInt32
 end
 
 
