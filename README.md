@@ -72,8 +72,8 @@ There are convenience `Libz.inflate(::Vector{UInt8})` and `Libz.deflate(::Vector
 functions that take a byte array and return another compressed or decompressed
 byte array.
 
-Checksum functions are exposed as `Libz.crc32(::Vector{UIint8})` and
-`Libz.adler32(::Vector{UIint8})`.
+Checksum functions are exposed as `Libz.crc32(::Vector{UInt8})` and
+`Libz.adler32(::Vector{UInt8})`.
 
 See [BufferedStreams.jl](https://github.com/dcjones/BufferedStreams.jl) for
 benchmarks of this library.
