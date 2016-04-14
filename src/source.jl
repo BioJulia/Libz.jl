@@ -1,7 +1,7 @@
 """
-The `M` type parameter should be either :inflate or :deflate
+The `mode` type parameter should be either :inflate or :deflate.
 """
-type Source{M, T <: BufferedInputStream}
+type Source{mode,T<:BufferedInputStream}
     input::T
     zstream::Base.RefValue{ZStream}
     reset_on_end::Bool
@@ -112,8 +112,8 @@ end
 """
 Read bytes from the zlib stream to a buffer. Satisfies the BufferedStreams source interface.
 """
-function Base.readbytes!{M}(source::Source{M}, buffer::Vector{UInt8},
-                            from::Int, to::Int)
+function Base.readbytes!{mode}(source::Source{mode}, buffer::Vector{UInt8},
+                               from::Int, to::Int)
     if source.zstream_end
         return 0
     end
@@ -134,7 +134,7 @@ function Base.readbytes!{M}(source::Source{M}, buffer::Vector{UInt8},
 
                     # we already saw a stream end, we don't need to call inflate
                     # again
-                    if M == :inflate && ret == Z_STREAM_END
+                    if mode == :inflate && ret == Z_STREAM_END
                         close(source)
                         break
                     end
@@ -148,7 +148,7 @@ function Base.readbytes!{M}(source::Source{M}, buffer::Vector{UInt8},
             input.position = input.available + 1
         end
 
-        ret = ccall((M, _zlib),
+        ret = ccall((mode, _zlib),
                     Cint, (Ptr{ZStream}, Cint),
                     source.zstream, flushmode)
 
