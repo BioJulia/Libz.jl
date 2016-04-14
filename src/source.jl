@@ -1,6 +1,3 @@
-
-
-
 """
 The `M` type parameter should be either :inflate or :deflate
 """
@@ -55,7 +52,7 @@ Open a zlib inflate input stream.
 
 """
 function ZlibInflateInputStream(input; bufsize::Int=8192, gzip::Bool=true,
-                                reset_on_end::Bool=false)
+                                reset_on_end::Bool=true)
     return BufferedInputStream(InflateSource(input, bufsize, gzip, reset_on_end), bufsize)
 end
 
@@ -209,5 +206,3 @@ end
 function reset!(source::Source{:deflate})
     return ccall((:deflateReset, _zlib), Cint, (Ptr{ZStream},), source.zstream)
 end
-
-
