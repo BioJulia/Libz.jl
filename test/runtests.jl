@@ -1,6 +1,5 @@
-
-
 using FactCheck, Libz, BufferedStreams
+using Compat
 
 
 facts("Source") do
@@ -59,4 +58,10 @@ facts("Files") do
     f = tempname() * ".gz"
     writegz(f, "Hello World!")
     @fact readgzstring(f) --> "Hello World!"
+end
+
+facts("Concatenated gzip files") do
+    filepath = Pkg.dir("Libz", "test", "foobar.txt.gz")
+    s = readstring(open(filepath) |> ZlibInflateInputStream)
+    @fact s --> "foo\nbar\n"
 end
