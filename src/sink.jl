@@ -1,8 +1,8 @@
 
 """
-The `M` type parameter should be either :inflate or :deflate (M for "mode")
+The `mode` type parameter should be either :inflate or :deflate.
 """
-type Sink{M, T <: BufferedOutputStream}
+type Sink{mode,T<:BufferedOutputStream}
     output::T
     zstream::Base.RefValue{ZStream}
     zstream_end::Bool
@@ -107,8 +107,8 @@ end
 Write some bytes from a given buffer. Satisfies the BufferedStreams sink
 interface.
 """
-function BufferedStreams.writebytes{M}(sink::Sink{M}, buffer::Vector{UInt8},
-                                       n::Int, eof::Bool)
+function BufferedStreams.writebytes{mode}(sink::Sink{mode}, buffer::Vector{UInt8},
+                                          n::Int, eof::Bool)
     zstream = getindex(sink.zstream)
 
     zstream.next_in = pointer(buffer)
@@ -118,7 +118,7 @@ function BufferedStreams.writebytes{M}(sink::Sink{M}, buffer::Vector{UInt8},
     flushmode = eof ? Z_FINISH : Z_NO_FLUSH
 
     while zstream.avail_in > 0 || eof
-        ret = ccall((M, _zlib),
+        ret = ccall((mode, _zlib),
                     Cint, (Ptr{ZStream}, Cint),
                     sink.zstream, flushmode)
 
