@@ -1,19 +1,23 @@
-using FactCheck, Libz, BufferedStreams
-using Compat
+using Libz, BufferedStreams, Compat
 
+if VERSION >= v"0.5-"
+    using Base.Test
+else
+    using BaseTestNext
+    const Test = BaseTestNext
+end
 
-facts("Source") do
+@testset "Source" begin
     function test_round_trip(data)
         return data == readbytes(data |> ZlibDeflateInputStream |> ZlibInflateInputStream)
     end
 
-    @fact test_round_trip(UInt8[]) --> true
-    @fact test_round_trip(rand(UInt8, 1)) --> true
-    @fact test_round_trip(rand(UInt8, 1000000)) --> true
+    @test test_round_trip(UInt8[])
+    @test test_round_trip(rand(UInt8, 1))
+    @test test_round_trip(rand(UInt8, 1000000))
 end
 
-
-facts("Sink") do
+@testset "Sink" begin
     function test_round_trip(data)
         outbuf = BufferedOutputStream()
         stream = outbuf |> ZlibInflateOutputStream |> ZlibDeflateOutputStream
@@ -22,46 +26,43 @@ facts("Sink") do
         return takebuf_array(outbuf) == data
     end
 
-    @fact test_round_trip(UInt8[]) --> true
-    @fact test_round_trip(rand(UInt8, 1)) --> true
-    @fact test_round_trip(rand(UInt8, 1000000)) --> true
+    @test test_round_trip(UInt8[])
+    @test test_round_trip(rand(UInt8, 1))
+    @test test_round_trip(rand(UInt8, 1000000))
 end
 
-
-facts("Inflate/Deflate") do
+@testset "Inflate/Deflate" begin
     data = rand(UInt8, 100000)
-    @fact Libz.inflate(Libz.deflate(data)) --> data
+    @test Libz.inflate(Libz.deflate(data)) == data
 end
 
-
-
-facts("Checksums") do
+@testset "Checksums" begin
     # checking correctness isn't our job, just make sure they're usable
     data = rand(UInt8, 100000)
 
     c32 = crc32(data)
-    @fact typeof(c32) --> UInt32
+    @test isa(c32, UInt32)
 
     a32 = adler32(data)
-    @fact typeof(a32) --> UInt32
+    @test isa(a32, UInt32)
 
-    @fact crc32(BufferedInputStream(IOBuffer(data), 1024)) --> c32
-    @fact adler32(BufferedInputStream(IOBuffer(data), 1024)) --> a32
+    @test crc32(BufferedInputStream(IOBuffer(data), 1024)) == c32
+    @test adler32(BufferedInputStream(IOBuffer(data), 1024)) == a32
 end
 
 
-facts("Files") do
+@testset "Files" begin
 
     testgz = joinpath(Pkg.dir("Libz"), "test/test.gz")
-    @fact crc32(readgz(testgz)) --> 0x2b082899
+    @test crc32(readgz(testgz)) === 0x2b082899
 
     f = tempname() * ".gz"
     writegz(f, "Hello World!")
-    @fact readgzstring(f) --> "Hello World!"
+    @test readgzstring(f) == "Hello World!"
 end
 
-facts("Concatenated gzip files") do
+@testset "Concatenated gzip files" begin
     filepath = Pkg.dir("Libz", "test", "foobar.txt.gz")
     s = readstring(open(filepath) |> ZlibInflateInputStream)
-    @fact s --> "foo\nbar\n"
+    @test s == "foo\nbar\n"
 end
