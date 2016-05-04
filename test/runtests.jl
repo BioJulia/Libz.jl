@@ -34,6 +34,27 @@ srand(0x123456)
     end
 
     @test_throws ErrorException read(ZlibInflateInputStream([0x00, 0x01]))
+
+    # check state transition
+    stream = ZlibInflateInputStream(ZlibDeflateInputStream([0x00,0x00], bufsize=1), bufsize=1)
+    @test stream.source.state === Libz.initialized
+    # read 1 byte
+    read(stream, UInt8)
+    @test stream.source.state === Libz.inprogress
+    # read the rest
+    read(stream)
+    @test stream.source.state === Libz.finished
+    # close and release resources
+    close(stream)
+    @test stream.source.state === Libz.finalized
+    # close again
+    try
+        close(stream)
+        @test true
+    catch
+        @test false
+    end
+    @test stream.source.state === Libz.finalized
 end
 
 @testset "Sink" begin
@@ -74,6 +95,28 @@ end
     BufferedStreams.writebytes(out, deflated, length(deflated), true)
     flush(out)
     @test takebuf_string(buf) == "foo"
+
+    # check state transition
+    buf = IOBuffer()
+    stream = ZlibDeflateOutputStream(ZlibInflateOutputStream(buf, bufsize=1), bufsize=1)
+    @test stream.sink.state === Libz.initialized
+    # write 2 bytes
+    write(stream, [0x00, 0x01])
+    @test stream.sink.state === Libz.inprogress
+    # flush data
+    flush(stream)
+    @test stream.sink.state === Libz.finished
+    # close and release resources
+    close(stream)
+    @test stream.sink.state === Libz.finalized
+    # close again
+    try
+        close(stream)
+        @test true
+    catch
+        @test false
+    end
+    @test stream.sink.state === Libz.finalized
 end
 
 @testset "Inflate/Deflate" begin

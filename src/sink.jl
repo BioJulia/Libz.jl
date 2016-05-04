@@ -131,10 +131,13 @@ function BufferedStreams.writebytes{mode}(
 end
 
 function Base.flush(sink::Sink)
-    if sink.state == inprogress
+    if sink.state == finalized
+        return
+    elseif sink.state == inprogress
         process(sink, Z_FINISH)
     end
     flush(sink.output)
+    return
 end
 
 function process{mode}(sink::Sink{mode}, flush)
@@ -179,7 +182,7 @@ end
 
 function Base.close{mode}(sink::Sink{mode})
     if sink.state == finalized
-        close(sink.output)
+        isopen(sink.output) && close(sink.output)
         return
     end
     if mode == :inflate
