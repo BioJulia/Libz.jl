@@ -7,6 +7,8 @@ else
     const Test = BaseTestNext
 end
 
+srand(0x123456)
+
 @testset "Source" begin
     function test_round_trip(data)
         return data == read(data |> ZlibDeflateInputStream |> ZlibInflateInputStream)
