@@ -195,7 +195,7 @@ end
 
 function Base.close{mode}(source::Source{mode})
     if source.state == finalized
-        close(source.input)
+        isopen(source.input) && close(source.input)
         return
     end
     if mode == :inflate
