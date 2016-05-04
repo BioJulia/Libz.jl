@@ -1,5 +1,5 @@
 """
-The `mode` type parameter should be either :inflate or :deflate.
+The `mode` type parameter must be either `:inflate` or `:deflate`.
 """
 type Source{mode,T<:BufferedInputStream}
     input::T
@@ -22,38 +22,36 @@ function InflateSource{T<:BufferedInputStream}(input::T, gzip::Bool,
 end
 
 
-function InflateSource(input::BufferedInputStream, bufsize::Int, gzip::Bool,
+function InflateSource(input::BufferedInputStream, bufsize::Integer, gzip::Bool,
                        reset_on_end::Bool)
     return InflateSource(input, gzip, reset_on_end)
 end
 
 
-function InflateSource(input::IO, bufsize::Int, gzip::Bool, reset_on_end::Bool)
+function InflateSource(input::IO, bufsize::Integer, gzip::Bool, reset_on_end::Bool)
     input_stream = BufferedInputStream(input, bufsize)
     return InflateSource(input_stream, gzip, reset_on_end)
 end
 
 
-function InflateSource(input::Vector{UInt8}, bufsize::Int, gzip::Bool,
+function InflateSource(input::Vector{UInt8}, bufsize::Integer, gzip::Bool,
                        reset_on_end::Bool)
     return InflateSource(BufferedInputStream(input), gzip, reset_on_end)
 end
 
 
 """
-Open a zlib inflate input stream.
+    ZlibInflateInputStream(input[; <keyword arguments>])
 
-# Args
-  * `input`: A byte vector, IO object, or BufferedInputStream containing
-            compressed data to inflate.
+Construct a zlib inflate input stream to decompress gzip/zlib data.
 
-# Named Args
-  * `bufsize`: size of buffer in bytes
-  * `gzip`: if true, data is gzip compressed, if false plain zlib compression
-  * `reset_on_end`: On stream end, try to find the start of another stream.
-
+# Arguments
+* `input`: a byte vector, IO object, or BufferedInputStream containing compressed data to inflate.
+* `bufsize::Integer=8192`: input and output buffer size.
+* `gzip::Bool=true`: if true, data is gzip compressed; if false, zlib compressed.
+* `reset_on_end::Bool=true`: on stream end, try to find the start of another stream.
 """
-function ZlibInflateInputStream(input; bufsize::Int=8192, gzip::Bool=true,
+function ZlibInflateInputStream(input; bufsize::Integer=8192, gzip::Bool=true,
                                 reset_on_end::Bool=true)
     return BufferedInputStream(
         InflateSource(input, bufsize, gzip, reset_on_end),
@@ -65,7 +63,7 @@ end
 # ---------------------------
 
 function DeflateSource{T<:BufferedInputStream}(
-                    input::T, gzip::Bool, level::Int, mem_level::Int, strategy::Int)
+        input::T, gzip::Bool, level::Integer, mem_level::Integer, strategy)
     return Source{:deflate,T}(
         input,
         init_deflate_stream(gzip, level, mem_level, strategy),
@@ -74,48 +72,54 @@ function DeflateSource{T<:BufferedInputStream}(
 end
 
 
-function DeflateSource(input::BufferedInputStream, bufsize::Int, gzip::Bool,
-                       level::Int, mem_level::Int, strategy::Int)
+function DeflateSource(input::BufferedInputStream, bufsize::Integer, gzip::Bool,
+                       level::Integer, mem_level::Integer, strategy)
     return DeflateSource(input, gzip, level, mem_level, strategy)
 end
 
 
-function DeflateSource(input::IO, bufsize::Int, gzip::Bool, level::Int,
-                       mem_level::Int, strategy::Int)
+function DeflateSource(input::IO, bufsize::Integer, gzip::Bool, level::Integer,
+                       mem_level::Integer, strategy)
     input_stream = BufferedInputStream(input, bufsize)
     return DeflateSource(input_stream, gzip, level, mem_level, strategy)
 end
 
 
-function DeflateSource(input::Vector{UInt8}, bufsize::Int, gzip::Bool,
-                       level::Int, mem_level::Int, strategy::Int)
+function DeflateSource(input::Vector{UInt8}, bufsize::Integer, gzip::Bool,
+                       level::Integer, mem_level::Integer, strategy)
     return DeflateSource(BufferedInputStream(input), gzip, level, mem_level, strategy)
 end
 
 
 """
+    ZlibDeflateInputStream(input[; <keyword arguments>])
+
 Construct a zlib deflate input stream to compress gzip/zlib data.
 
-# Args
-  * `input`: A byte vector, IO object, or BufferedInputStream containing
-            data to compress.
-
-# Named Args
-  * `bufsize`: Input and output buffer size.
-  * `gzip`: If true, write gzip header and trailer.
-  * `level`: Compression level in 1-9
-  * `mem_level`: Memory to use for compression in 1-9
-  * `strategy`: Compression strategy. See zlib documentation.
+# Arguments
+* `input`: a byte vector, IO object, or BufferedInputStream containing data to compress.
+* `bufsize::Integer=8192`: input and output buffer size.
+* `gzip::Bool=true`: if true, data is gzip compressed; if false, zlib compressed.
+* `level::Integer=6`: compression level in 1-9.
+* `mem_level::Integer=8`: memory to use for compression in 1-9.
+* `strategy=Z_DEFAULT_STRATEGY`: compression strategy; see zlib documentation.
 """
-function ZlibDeflateInputStream(input; bufsize::Int=8192, gzip::Bool=true,
-                                level=6, mem_level=8, strategy=Z_DEFAULT_STRATEGY)
-    return BufferedInputStream(DeflateSource(input, bufsize, gzip, Int(level),
-                                             Int(mem_level), Int(strategy)), bufsize)
+function ZlibDeflateInputStream(input;
+                                bufsize::Integer=8192,
+                                gzip::Bool=true,
+                                level::Integer=6,
+                                mem_level::Integer=8,
+                                strategy=Z_DEFAULT_STRATEGY)
+    return BufferedInputStream(
+        DeflateSource(input, bufsize, gzip, level, mem_level, strategy), bufsize)
 end
 
 
 """
-Read bytes from the zlib stream to a buffer. Satisfies the BufferedStreams source interface.
+    readbytes!(source, buffer, from, to)
+
+Read bytes from the zlib stream to a buffer. Satisfies the BufferedStreams
+source interface.
 """
 function BufferedStreams.readbytes!{mode}(
         source::Source{mode},
