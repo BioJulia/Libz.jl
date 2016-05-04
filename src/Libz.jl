@@ -2,7 +2,7 @@
 
 module Libz
 
-using BufferedStreams
+using BufferedStreams, Compat
 
 export ZlibInflateInputStream, ZlibDeflateInputStream,
        ZlibInflateOutputStream, ZlibDeflateOutputStream,
@@ -11,20 +11,21 @@ export ZlibInflateInputStream, ZlibDeflateInputStream,
 
 
 include("zlib_h.jl")
+include("state.jl")
 include("source.jl")
 include("sink.jl")
 include("checksums.jl")
 
 
 function deflate(data::Vector{UInt8})
-    return readbytes(ZlibDeflateInputStream(data))
+    return read(ZlibDeflateInputStream(data))
 end
 
 const compress = deflate
 
 
 function inflate(data::Vector{UInt8})
-    return readbytes(ZlibInflateInputStream(data))
+    return read(ZlibInflateInputStream(data))
 end
 
 const decompress = inflate
@@ -45,9 +46,7 @@ function gzopen(f::Function, filename::AbstractString)
 end
 
 writegz(filename::AbstractString, data) = gzopen(io->write(io, data), filename, "w")
-readgz(filename::AbstractString) = gzopen(readbytes, filename)
-readgzstring(filename::AbstractString) = gzopen(readall, filename)
+readgz(filename::AbstractString) = gzopen(read, filename)
+readgzstring(filename::AbstractString) = gzopen(readstring, filename)
 
 end # module Libz
-
-
