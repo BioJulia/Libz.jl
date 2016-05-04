@@ -91,8 +91,8 @@ end
     a32 = adler32(data)
     @test isa(a32, UInt32)
 
-    @test crc32(BufferedInputStream(IOBuffer(data), 1024)) == c32
-    @test adler32(BufferedInputStream(IOBuffer(data), 1024)) == a32
+    @test crc32(BufferedInputStream(IOBuffer(data), 1024)) === c32
+    @test adler32(BufferedInputStream(IOBuffer(data), 1024)) === a32
 end
 
 @testset "Concatenated gzip files" begin
