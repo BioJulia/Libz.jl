@@ -50,15 +50,6 @@ function code2str(code::Int32)
     error("unknown return code: ", code)
 end
 
-# Zlib errors as Exceptions
-zerror(e::Integer) = bytestring(ccall((:zError, _zlib), Ptr{UInt8}, (Int32,), e))
-type ZError <: Exception
-    err::Int32
-    err_str::AbstractString
-
-    ZError(e::Integer) = (e == Z_ERRNO ? new(e, strerror()) : new(e, zerror(e)))
-end
-
 # Compression Levels
 const Z_NO_COMPRESSION      = Int32(0)
 const Z_BEST_SPEED          = Int32(1)
@@ -183,8 +174,7 @@ end
 """
 Initialize a ZStream for deflation.
 """
-function init_deflate_stream(gzip::Bool, level::Int, mem_level::Int,
-                             strategy::Int)
+function init_deflate_stream(gzip::Bool, level::Integer, mem_level::Integer, strategy)
     if !(1 <= level <= 9)
         error("Invalid zlib compression level.")
     end

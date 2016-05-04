@@ -1,4 +1,3 @@
-
 [![Build Status](https://travis-ci.org/BioJulia/Libz.jl.svg?branch=master)](https://travis-ci.org/BioJulia/Libz.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/g3qixt97g6uua5d6?svg=true)](https://ci.appveyor.com/project/Ward9250/libz-jl)
 [![codecov.io](http://codecov.io/github/BioJulia/Libz.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/Libz.jl?branch=master)
@@ -16,7 +15,8 @@ Both have shortcomings that this package aims to address, specifically:
   * GZip.jl only supports file I/O.
   * GZip.jl doesn't support reading/writing plain zlib data.
 
-# API
+
+## API
 
 This library exports four stream types:
 
@@ -31,11 +31,12 @@ These work like regular `IO` objects. Each takes as a parameter either in input
 or output source.
 
 
-## Examples
+### Examples
 
 ```julia
 # read lines from a compressed file
 for line in eachline(open("data.txt.gz") |> ZlibInflateInputStream)
+    # do something...
 end
 
 # write compressed data to a file
@@ -44,12 +45,12 @@ stream = ZlibDeflateOutputStream(io)
 for c in rand(UInt8, 10000)
     write(stream, c)
 end
-close(stream)
-close(io)
+close(stream)  # this closes not only `stream` but also `io`
 
 # pointlessly compress and decompress some data (use `read` on v0.5)
 readbytes(rand(UInt8, 10000) |> ZlibDeflateInputStream |> ZlibInflateInputStream)
 ```
+
 
 ## Other functions
 

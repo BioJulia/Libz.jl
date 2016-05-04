@@ -2,12 +2,11 @@
 
 module Libz
 
-using BufferedStreams, Compat
-
 export ZlibInflateInputStream, ZlibDeflateInputStream,
        ZlibInflateOutputStream, ZlibDeflateOutputStream,
        adler32, crc32
 
+using BufferedStreams, Compat
 
 include("zlib_h.jl")
 include("state.jl")
