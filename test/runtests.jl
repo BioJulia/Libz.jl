@@ -96,6 +96,22 @@ end
     flush(out)
     @test takebuf_string(buf) == "foo"
 
+    @testset "sink vector" begin
+        # Python: zlib.compress(bytearray([0x40, 0x41, 0x42]))
+        x = [0x40, 0x41, 0x42]
+        y = b"x\x9cspt\x02\x00\x01\x87\x00\xc4"
+
+        out = ZlibDeflateOutputStream(UInt8[], gzip=false)
+        write(out, x)
+        flush(out)
+        @test takebuf_array(out.sink.output) == y
+
+        out = ZlibInflateOutputStream(UInt8[], gzip=false)
+        write(out, y)
+        flush(out)
+        @test takebuf_array(out.sink.output) == x
+    end
+
     # check state transition
     buf = IOBuffer()
     stream = ZlibDeflateOutputStream(ZlibInflateOutputStream(buf, bufsize=1), bufsize=1)
