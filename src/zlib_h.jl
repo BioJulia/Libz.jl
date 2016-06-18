@@ -175,7 +175,7 @@ end
 Initialize a ZStream for deflation.
 """
 function init_deflate_zstream(gzip::Bool, level::Integer, mem_level::Integer, strategy)
-    if !(1 <= level <= 9)
+    if !(0 <= level <= 9 || level == Z_DEFAULT_COMPRESSION)
         throw(ArgumentError("invalid zlib compression level"))
     end
 
