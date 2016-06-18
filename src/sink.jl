@@ -55,7 +55,7 @@ end
 
 function DeflateSink{T<:BufferedOutputStream}(
         output::T, gzip::Bool, level::Integer, mem_level::Integer, strategy)
-    zstream = init_deflate_stream(gzip, level, mem_level, strategy)
+    zstream = init_deflate_zstream(gzip, level, mem_level, strategy)
     zstream[].next_out = pointer(output)
     zstream[].avail_out = BufferedStreams.available_bytes(output)
     return Sink{:deflate,T}(output, zstream, initialized)

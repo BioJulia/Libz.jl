@@ -66,7 +66,7 @@ function DeflateSource{T<:BufferedInputStream}(
         input::T, gzip::Bool, level::Integer, mem_level::Integer, strategy)
     return Source{:deflate,T}(
         input,
-        init_deflate_stream(gzip, level, mem_level, strategy),
+        init_deflate_zstream(gzip, level, mem_level, strategy),
         initialized,
         false)
 end
