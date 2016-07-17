@@ -157,11 +157,11 @@ function process{mode}(sink::Sink{mode}, flush)
     zstream.avail_out = BufferedStreams.available_bytes(output)
     old_avail_in = zstream.avail_in
     old_avail_out = zstream.avail_out
-    ret = ccall(
-        (mode, _zlib),
-        Cint,
-        (Ref{ZStream}, Cint),
-        zstream, flush)
+    if mode == :inflate
+        ret = inflate!(zstream, flush)
+    else
+        ret = deflate!(zstream, flush)
+    end
     n_in += old_avail_in - zstream.avail_in
     n_out += old_avail_out - zstream.avail_out
     output.position += old_avail_out - zstream.avail_out
@@ -190,13 +190,9 @@ function Base.close{mode}(sink::Sink{mode})
         return
     end
     if mode == :inflate
-        ret = ccall((:inflateEnd, _zlib), Cint, (Ref{ZStream},), sink.zstream)
+        @zcheck end_inflate!(sink.zstream)
     else
-        @assert mode == :deflate
-        ret = ccall((:deflateEnd, _zlib), Cint, (Ref{ZStream},), sink.zstream)
-    end
-    if ret != Z_OK
-        zerror(sink.zstream, ret)
+        @zcheck end_deflate!(sink.zstream)
     end
     @trans sink (
         initialized => finalized,
@@ -209,13 +205,9 @@ end
 
 function reset!{mode}(sink::Sink{mode})
     if mode == :inflate
-        ret = ccall((:inflateReset, _zlib), Cint, (Ref{ZStream},), sink.zstream)
+        @zcheck reset_inflate!(sink.zstream)
     else
-        @assert mode == :deflate
-        ret = ccall((:deflateReset, _zlib), Cint, (Ref{ZStream},), sink.zstream)
-    end
-    if ret != Z_OK
-        zerror(sink.zstream, ret)
+        @zcheck reset_deflate!(sink.zstream)
     end
     @trans sink (
         initialized => initialized,
