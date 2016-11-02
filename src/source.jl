@@ -12,31 +12,32 @@ end
 # inflate source constructors
 # ---------------------------
 
-function InflateSource{T<:BufferedInputStream}(input::T, gzip::Bool,
+function InflateSource{T<:BufferedInputStream}(input::T, raw::Bool, gzip::Bool,
                                                reset_on_end::Bool)
     return Source{:inflate,T}(
         input,
-        init_inflate_zstream(gzip),
+        init_inflate_zstream(raw, gzip),
         initialized,
         reset_on_end)
 end
 
 
-function InflateSource(input::BufferedInputStream, bufsize::Integer, gzip::Bool,
-                       reset_on_end::Bool)
-    return InflateSource(input, gzip, reset_on_end)
+function InflateSource(input::BufferedInputStream, bufsize::Integer, raw::Bool,
+                       gzip::Bool, reset_on_end::Bool)
+    return InflateSource(input, raw, gzip, reset_on_end)
 end
 
 
-function InflateSource(input::IO, bufsize::Integer, gzip::Bool, reset_on_end::Bool)
+function InflateSource(input::IO, bufsize::Integer, raw::Bool, gzip::Bool,
+                       reset_on_end::Bool)
     input_stream = BufferedInputStream(input, bufsize)
-    return InflateSource(input_stream, gzip, reset_on_end)
+    return InflateSource(input_stream, raw, gzip, reset_on_end)
 end
 
 
-function InflateSource(input::Vector{UInt8}, bufsize::Integer, gzip::Bool,
-                       reset_on_end::Bool)
-    return InflateSource(BufferedInputStream(input), gzip, reset_on_end)
+function InflateSource(input::Vector{UInt8}, bufsize::Integer, raw::Bool,
+                       gzip::Bool, reset_on_end::Bool)
+    return InflateSource(BufferedInputStream(input), raw, gzip, reset_on_end)
 end
 
 
@@ -48,13 +49,14 @@ Construct a zlib inflate input stream to decompress gzip/zlib data.
 # Arguments
 * `input`: a byte vector, IO object, or BufferedInputStream containing compressed data to inflate.
 * `bufsize::Integer=8192`: input and output buffer size.
+* `raw::Bool=falso`: if true, data is raw compress data, without zlib metadata
 * `gzip::Bool=true`: if true, data is gzip compressed; if false, zlib compressed.
 * `reset_on_end::Bool=true`: on stream end, try to find the start of another stream.
 """
-function ZlibInflateInputStream(input; bufsize::Integer=8192, gzip::Bool=true,
-                                reset_on_end::Bool=true)
+function ZlibInflateInputStream(input; bufsize::Integer=8192, raw::Bool=false,
+                                gzip::Bool=true, reset_on_end::Bool=true)
     return BufferedInputStream(
-        InflateSource(input, bufsize, gzip, reset_on_end),
+        InflateSource(input, bufsize, raw, gzip, reset_on_end),
         bufsize)
 end
 
@@ -63,31 +65,33 @@ end
 # ---------------------------
 
 function DeflateSource{T<:BufferedInputStream}(
-        input::T, gzip::Bool, level::Integer, mem_level::Integer, strategy)
+        input::T, raw::Bool, gzip::Bool, level::Integer, mem_level::Integer,
+        strategy)
     return Source{:deflate,T}(
         input,
-        init_deflate_zstream(gzip, level, mem_level, strategy),
+        init_deflate_zstream(raw, gzip, level, mem_level, strategy),
         initialized,
         false)
 end
 
 
-function DeflateSource(input::BufferedInputStream, bufsize::Integer, gzip::Bool,
-                       level::Integer, mem_level::Integer, strategy)
-    return DeflateSource(input, gzip, level, mem_level, strategy)
+function DeflateSource(input::BufferedInputStream, bufsize::Integer, raw::Bool,
+                       gzip::Bool, level::Integer, mem_level::Integer, strategy)
+    return DeflateSource(input, raw, gzip, level, mem_level, strategy)
 end
 
 
-function DeflateSource(input::IO, bufsize::Integer, gzip::Bool, level::Integer,
+function DeflateSource(input::IO, bufsize::Integer, raw::Bool, gzip::Bool,
+                       level::Integer,
                        mem_level::Integer, strategy)
     input_stream = BufferedInputStream(input, bufsize)
-    return DeflateSource(input_stream, gzip, level, mem_level, strategy)
+    return DeflateSource(input_stream, raw, gzip, level, mem_level, strategy)
 end
 
 
-function DeflateSource(input::Vector{UInt8}, bufsize::Integer, gzip::Bool,
-                       level::Integer, mem_level::Integer, strategy)
-    return DeflateSource(BufferedInputStream(input), gzip, level, mem_level, strategy)
+function DeflateSource(input::Vector{UInt8}, bufsize::Integer, raw::Bool,
+                       gzip::Bool, level::Integer, mem_level::Integer, strategy)
+    return DeflateSource(BufferedInputStream(input), raw, gzip, level, mem_level, strategy)
 end
 
 
@@ -99,6 +103,7 @@ Construct a zlib deflate input stream to compress gzip/zlib data.
 # Arguments
 * `input`: a byte vector, IO object, or BufferedInputStream containing data to compress.
 * `bufsize::Integer=8192`: input and output buffer size.
+* `raw::Bool=false`: if true, data is raw compress data, without zlib metadata
 * `gzip::Bool=true`: if true, data is gzip compressed; if false, zlib compressed.
 * `level::Integer=6`: compression level in 1-9.
 * `mem_level::Integer=8`: memory to use for compression in 1-9.
@@ -106,12 +111,14 @@ Construct a zlib deflate input stream to compress gzip/zlib data.
 """
 function ZlibDeflateInputStream(input;
                                 bufsize::Integer=8192,
+                                raw::Bool=false,
                                 gzip::Bool=true,
                                 level::Integer=6,
                                 mem_level::Integer=8,
                                 strategy=Z_DEFAULT_STRATEGY)
     return BufferedInputStream(
-        DeflateSource(input, bufsize, gzip, level, mem_level, strategy), bufsize)
+        DeflateSource(input, bufsize, raw, gzip, level, mem_level, strategy),
+        bufsize)
 end
 
 

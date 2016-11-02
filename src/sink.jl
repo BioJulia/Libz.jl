@@ -11,27 +11,29 @@ end
 # inflate sink constructors
 # -------------------------
 
-function InflateSink{T<:BufferedOutputStream}(output::T, gzip::Bool)
-    zstream = init_inflate_zstream(gzip)
+function InflateSink{T<:BufferedOutputStream}(output::T, raw::Bool, gzip::Bool)
+    zstream = init_inflate_zstream(raw, gzip)
     zstream.next_out = pointer(output)
     zstream.avail_out = BufferedStreams.available_bytes(output)
     return Sink{:inflate,T}(output, zstream, initialized)
 end
 
 
-function InflateSink(output::BufferedOutputStream, bufsize::Integer, gzip::Bool)
-    return InflateSink(output, gzip)
+function InflateSink(output::BufferedOutputStream, bufsize::Integer, raw::Bool,
+                     gzip::Bool)
+    return InflateSink(output, raw, gzip)
 end
 
 
-function InflateSink(output::IO, bufsize::Integer, gzip::Bool)
+function InflateSink(output::IO, bufsize::Integer, raw::Bool, gzip::Bool)
     output_stream = BufferedOutputStream(output, bufsize)
-    return InflateSink(output_stream, gzip)
+    return InflateSink(output_stream, raw, gzip)
 end
 
 
-function InflateSink(output::Vector{UInt8}, bufsize::Integer, gzip::Bool)
-    return InflateSink(BufferedOutputStream(output), gzip)
+function InflateSink(output::Vector{UInt8}, bufsize::Integer, raw::Bool,
+                     gzip::Bool)
+    return InflateSink(BufferedOutputStream(output), raw, gzip)
 end
 
 
@@ -43,10 +45,12 @@ Construct a zlib inflate output stream to decompress gzip/zlib data.
 # Arguments
 * `output`: a byte vector, IO object, or BufferedInputStream to which decompressed data should be written.
 * `bufsize::Integer=8192`: input and output buffer size.
+* `raw::Bool=false`: if true, data is raw compress data, without zlib metadata
 * `gzip::Bool=true`: if true, data is gzip compressed; if false, zlib compressed.
 """
-function ZlibInflateOutputStream(output; bufsize::Integer=8192, gzip::Bool=true)
-    return BufferedOutputStream(InflateSink(output, bufsize, gzip), bufsize)
+function ZlibInflateOutputStream(output; bufsize::Integer=8192, raw::Bool=false,
+                                 gzip::Bool=true)
+    return BufferedOutputStream(InflateSink(output, bufsize, raw, gzip), bufsize)
 end
 
 
@@ -54,30 +58,31 @@ end
 # -------------------------
 
 function DeflateSink{T<:BufferedOutputStream}(
-        output::T, gzip::Bool, level::Integer, mem_level::Integer, strategy)
-    zstream = init_deflate_zstream(gzip, level, mem_level, strategy)
+        output::T, raw::Bool, gzip::Bool, level::Integer, mem_level::Integer,
+        strategy)
+    zstream = init_deflate_zstream(raw, gzip, level, mem_level, strategy)
     zstream.next_out = pointer(output)
     zstream.avail_out = BufferedStreams.available_bytes(output)
     return Sink{:deflate,T}(output, zstream, initialized)
 end
 
 
-function DeflateSink(output::BufferedOutputStream, bufsize::Integer, gzip::Bool,
-                     level::Integer, mem_level::Integer, strategy)
-    return DeflateSink(output, gzip, level, mem_level, strategy)
+function DeflateSink(output::BufferedOutputStream, bufsize::Integer, raw::Bool,
+                     gzip::Bool, level::Integer, mem_level::Integer, strategy)
+    return DeflateSink(output, raw, gzip, level, mem_level, strategy)
 end
 
 
-function DeflateSink(output::IO, bufsize::Integer, gzip::Bool, level::Integer,
-                     mem_level::Integer, strategy)
+function DeflateSink(output::IO, bufsize::Integer, raw::Bool, gzip::Bool,
+                     level::Integer, mem_level::Integer, strategy)
     output_stream = BufferedOutputStream(output, bufsize)
-    return DeflateSink(output_stream, gzip, level, mem_level, strategy)
+    return DeflateSink(output_stream, raw, gzip, level, mem_level, strategy)
 end
 
 
-function DeflateSink(output::Vector{UInt8}, bufsize::Integer, gzip::Bool,
-                     level::Integer, mem_level::Integer, strategy)
-    return DeflateSink(BufferedOutputStream(output), gzip, level, mem_level, strategy)
+function DeflateSink(output::Vector{UInt8}, bufsize::Integer, raw::Bool,
+                     gzip::Bool, level::Integer, mem_level::Integer, strategy)
+    return DeflateSink(BufferedOutputStream(output), raw, gzip, level, mem_level, strategy)
 end
 
 
@@ -89,6 +94,7 @@ Construct a zlib deflate output stream to compress gzip/zlib data.
 # Arguments
 * `output`: a byte vector, IO object, or BufferedInputStream to which compressed data should be written.
 * `bufsize::Integer=8192`: input and output buffer size.
+* `raw::Bool=false`: if true, data is raw compress data, without zlib metadata
 * `gzip::Bool=true`: if true, data is gzip compressed; if false, zlib compressed.
 * `level::Integer=6`: compression level in 1-9.
 * `mem_level::Integer=8`: memory to use for compression in 1-9.
@@ -96,12 +102,13 @@ Construct a zlib deflate output stream to compress gzip/zlib data.
 """
 function ZlibDeflateOutputStream(output;
                                  bufsize::Integer=8192,
+                                 raw::Bool=false,
                                  gzip::Bool=true,
                                  level::Integer=6,
                                  mem_level::Integer=8,
                                  strategy=Z_DEFAULT_STRATEGY)
     return BufferedOutputStream(
-        DeflateSink(output, bufsize, gzip, level, mem_level, strategy),
+        DeflateSink(output, bufsize, raw, gzip, level, mem_level, strategy),
         bufsize)
 end
 

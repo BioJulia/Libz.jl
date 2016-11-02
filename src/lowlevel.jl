@@ -243,13 +243,22 @@ macro zcheck(ex)
     end
 end
 
-function init_inflate_zstream(gzip::Bool)
+function init_inflate_zstream(raw::Bool, gzip::Bool)
+    if raw && gzip
+        error("Zlib raw and gzip flags are mutually exclusive.")
+    end
     zstream = ZStream()
-    @zcheck init_inflate!(zstream, gzip ? 32 + 15 : 15)
+    window_bits = raw ? -15 :
+                 (gzip ? 32 + 15 : 15)
+    @zcheck init_inflate!(zstream, window_bits)
     return zstream
 end
 
-function init_deflate_zstream(gzip::Bool, level::Integer, mem_level::Integer, strategy)
+function init_deflate_zstream(raw::Bool, gzip::Bool, level::Integer, mem_level::Integer, strategy)
+    if raw && gzip
+        error("Zlib raw and gzip flags are mutually exclusive.")
+    end
+
     if !(0 <= level <= 9 || level == Z_DEFAULT_COMPRESSION)
         throw(ArgumentError("invalid zlib compression level"))
     end
@@ -267,7 +276,8 @@ function init_deflate_zstream(gzip::Bool, level::Integer, mem_level::Integer, st
     end
 
     zstream = ZStream()
-    window_bits = gzip ? 16 + 15 : 15
+    window_bits = raw ? -15 :
+                (gzip ? 16 + 15 : 15)
     @zcheck init_deflate!(zstream, level, Z_DEFLATED, window_bits, mem_level, strategy)
     return zstream
 end

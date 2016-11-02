@@ -19,18 +19,26 @@ srand(0x123456)
     @test test_round_trip(rand(UInt8, 1000000))
     @test test_round_trip(zeros(UInt8, 1000000))
 
-    function test_round_trip2(data, bufsize, gzip, reset_on_end)
+    function test_round_trip2(data, bufsize, raw, gzip, reset_on_end)
         return data == read(
             ZlibInflateInputStream(
-                ZlibDeflateInputStream(data, bufsize=bufsize, gzip=gzip),
-                bufsize=bufsize, gzip=gzip, reset_on_end=reset_on_end))
+                ZlibDeflateInputStream(data, bufsize=bufsize, raw=raw, gzip=gzip),
+                bufsize=bufsize, raw=raw, gzip=gzip, reset_on_end=reset_on_end))
     end
 
     for bufsize in [1, 5, 10, 50, 128*2^10], gzip in [false, true], reset_on_end in [false, true]
-        @test test_round_trip2(UInt8[], bufsize, gzip, reset_on_end)
-        @test test_round_trip2(rand(UInt8, 1), bufsize, gzip, reset_on_end)
-        @test test_round_trip2(rand(UInt8, 1000000), bufsize, gzip, reset_on_end)
-        @test test_round_trip2(zeros(UInt8, 1000000), bufsize, gzip, reset_on_end)
+        @test test_round_trip2(UInt8[], bufsize, false, gzip, reset_on_end)
+        @test test_round_trip2(rand(UInt8, 1), bufsize, false, gzip, reset_on_end)
+        @test test_round_trip2(rand(UInt8, 1000000), bufsize, false, gzip, reset_on_end)
+        @test test_round_trip2(zeros(UInt8, 1000000), bufsize, false, gzip, reset_on_end)
+    end
+
+    # raw deflate
+    for bufsize in [1, 5, 10, 50, 128*2^10],  reset_on_end in [false, true]
+        @test test_round_trip2(UInt8[], bufsize, true, false, reset_on_end)
+        @test test_round_trip2(rand(UInt8, 1), bufsize, true, false, reset_on_end)
+        @test test_round_trip2(rand(UInt8, 1000000), bufsize, true, false, reset_on_end)
+        @test test_round_trip2(zeros(UInt8, 1000000), bufsize, true, false, reset_on_end)
     end
 
     @test_throws ArgumentError ZlibDeflateInputStream(UInt8[], bufsize=0)
@@ -74,11 +82,11 @@ end
     @test test_round_trip(rand(UInt8, 1))
     @test test_round_trip(rand(UInt8, 1000000))
 
-    function test_round_trip2(data, bufsize, gzip)
+    function test_round_trip2(data, bufsize, raw, gzip)
         outbuf = IOBuffer()
         stream = ZlibDeflateOutputStream(
-            ZlibInflateOutputStream(outbuf, bufsize=bufsize, gzip=gzip),
-            bufsize=bufsize, gzip=gzip)
+            ZlibInflateOutputStream(outbuf, bufsize=bufsize, raw=raw, gzip=gzip),
+            bufsize=bufsize, raw=raw, gzip=gzip)
         write(stream, data)
         flush(stream)
         actual = takebuf_array(outbuf)
@@ -86,10 +94,17 @@ end
     end
 
     for bufsize in [1, 5, 10, 50, 128*2^10], gzip in [false, true]
-        @test test_round_trip2(UInt8[], bufsize, gzip)
-        @test test_round_trip2(rand(UInt8, 1), bufsize, gzip)
-        @test test_round_trip2(rand(UInt8, 1000000), bufsize, gzip)
-        @test test_round_trip2(zeros(UInt8, 1000000), bufsize, gzip)
+        @test test_round_trip2(UInt8[], bufsize, false, gzip)
+        @test test_round_trip2(rand(UInt8, 1), bufsize, false, gzip)
+        @test test_round_trip2(rand(UInt8, 1000000), bufsize, false, gzip)
+        @test test_round_trip2(zeros(UInt8, 1000000), bufsize, false, gzip)
+    end
+
+    for bufsize in [1, 5, 10, 50, 128*2^10]
+        @test test_round_trip2(UInt8[], bufsize, true, false)
+        @test test_round_trip2(rand(UInt8, 1), bufsize, true, false)
+        @test test_round_trip2(rand(UInt8, 1000000), bufsize, true, false)
+        @test test_round_trip2(zeros(UInt8, 1000000), bufsize, true, false)
     end
 
     @test_throws ArgumentError ZlibDeflateOutputStream(UInt8[], bufsize=0)
