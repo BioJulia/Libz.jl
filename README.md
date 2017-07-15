@@ -2,6 +2,12 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/g3qixt97g6uua5d6?svg=true)](https://ci.appveyor.com/project/Ward9250/libz-jl)
 [![codecov.io](http://codecov.io/github/BioJulia/Libz.jl/coverage.svg?branch=master)](http://codecov.io/github/BioJulia/Libz.jl?branch=master)
 
+NOTE: If you are starting a new project on Julia 0.6 or later, **it is recommended
+to use the [CodecZlib.jl](https://github.com/bicycle1885/CodecZlib.jl) package
+instead.** CodecZlib.jl and [other
+packages](https://github.com/bicycle1885/TranscodingStreams.jl) offer more
+unified interfaces for a wide range of file formats.
+
 This is yet another zlib interface for Julia. It's intended to replace the two
 prior zlib packages.
 
