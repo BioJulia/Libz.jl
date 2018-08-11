@@ -6,7 +6,7 @@ export ZlibInflateInputStream, ZlibDeflateInputStream,
        ZlibInflateOutputStream, ZlibDeflateOutputStream,
        adler32, crc32
 
-using BufferedStreams, Compat
+using BufferedStreams
 
 include("lowlevel.jl")
 include("state.jl")

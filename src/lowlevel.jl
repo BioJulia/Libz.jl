@@ -1,7 +1,6 @@
 # Lower-level interface to the zlib library.
-import Compat: Cvoid
 
-if Compat.Sys.iswindows()
+if Sys.iswindows()
     const zlib = "zlib1"
 else
     const zlib = "libz"
