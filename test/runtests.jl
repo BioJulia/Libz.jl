@@ -1,10 +1,8 @@
 using Libz
 
-using BufferedStreams, Compat
-using Compat.Test
-using Compat.Random
+using BufferedStreams, Random
 
-srand(0x123456)
+Random.seed!(0x123456)
 
 @testset "Source" begin
     function test_round_trip(data)
