@@ -1,6 +1,4 @@
-using Libz
-
-using BufferedStreams, Random
+using Libz, BufferedStreams, Random, Test
 
 Random.seed!(0x123456)
 
