@@ -1,7 +1,7 @@
 name = "Libz"
 uuid = "2ec943e9-cfe8-584d-b93d-64dcb6d567b7"
 authors = ["D.C. Jones <dcjones@cs.washington.edu>", "Kenta Sato <bicycle1885@gmail.com>"]
-version = "0.1.0"
+version = "1.0.1"
 
 [deps]
 BufferedStreams = "e1450e63-4bb3-523b-b2a4-4ffa8c0fd77d"
